@@ -82,10 +82,3 @@ def CreateMessageHtml(sender, to, subject, msgPlain):#, msgHtml):
     msg.attach(MIMEText(msgPlain, 'plain'))
     #msg.attach(MIMEText(msgHtml, 'html'))
     return {'raw': base64.urlsafe_b64encode(msg.as_bytes()).decode()}
-
-
-<<<<<<< HEAD
-=======
-
-
->>>>>>> d2256ef13c32e3a69cd0a2add21e148f6f4a35cd
