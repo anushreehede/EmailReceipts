@@ -157,7 +157,11 @@ def main():
 				print("\n$$$ New item information $$$\n")
 				item = input('Enter item id: ')
 				img = qrcode.make(item)
+<<<<<<< HEAD
 				img.save("img/item"+item+".jpg")
+=======
+				img.save("item"+item+".jpg")
+>>>>>>> d2256ef13c32e3a69cd0a2add21e148f6f4a35cd
 				name = input('Enter item name: ')
 				price = input('Enter item price: ')
 
