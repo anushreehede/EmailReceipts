@@ -8,12 +8,22 @@ import qrcode
 import os
 # For reading serial input from QR code scanner
 import serial
+# For using a database
+import MySQLdb as mariadb
 
 # Sender field for email
 sender = "example@gmail.com"
 
 # Establish the connection on a specific port
-ser = serial.Serial('/dev/ttyACM1', 9600) 
+# ser = serial.Serial('/dev/ttyACM1', 9600) 
+
+# Establish a connection to the database
+# host='localhost'
+# user='root'
+# password='xxx'
+# database='email_receipts'
+# mariadb_connection = mariadb.connect(host, user, password, database)
+# cursor = mariadb_connection.cursor()
 
 # Common dictionaries for any bill
 
@@ -51,11 +61,11 @@ class Bill:
 			print('You are buying: ' + itemnames[itemid])
 
 			# Entering quantity for item and storing the pair in bill qty
-			qty = input('Enter quantity of ' + itemnames[itemid]+ ': ')
+			qty = raw_input('Enter quantity of ' + itemnames[itemid]+ ': ')
 			self.billqty.update({itemid: qty})
 
 			# Decide whether or not to add another item 
-			ch = input('\nEnter y to add another item, any other key to proceed billing: ')
+			ch = raw_input('\nEnter y to add another item, any other key to proceed billing: ')
 
 	# Method to calculate the total bill from billqty
 	# Generate receipts. Print to console, store in file, email to customer.
@@ -101,7 +111,7 @@ def main():
 	choice = 'y'
 	while choice == 'y':
 
-		todo = input('1. Generate bills\n2. Add items to stock\n3. Exit\nEnter choice: ')
+		todo = raw_input('1. Generate bills\n2. Add items to stock\n3. Exit\nEnter choice: ')
 
 		# Generate bills 
 		if todo == '1':
@@ -120,18 +130,17 @@ def main():
 				b = random.randint(1,101)
 
 				# Get the customer id (phone number) - unique.
-				cust = input('Enter the customer id: ')  
+				cust = raw_input('Enter the customer phone number: ')  
 
 				# Checking for a new customer
 				if cust not in emails.keys():
 
 					print("\n*** New customer information ***\n")
-					cust = input('Enter new customer id (cust+idno): ')
-					img = qrcode.make(cust)
-					img.save(cust+".jpg")
-					emailid = input('Enter email of the customer: ')
+					cust = raw_input('Enter phone number: ')
+					c_name = raw_input('Enter name: ')
+					emailid = raw_input('Enter email of the customer: ')
 					with open("Customers.txt", 'a') as custfile:
-						custfile.write(cust+" "+emailid+'\n')
+						custfile.write(cust+" "+c_name+" "+emailid+'\n')
 
 				# Generate a bill with a bill id for a particular customer
 				bill = Bill(str(b), cust) 
@@ -146,7 +155,7 @@ def main():
 				bill.calculateBill()
 
 				# Decide whether or not to generate next bill
-				c = input('Do you want to generate another bill? y for yes ')
+				c = raw_input('Do you want to generate another bill? y for yes ')
 			continue
 
 		# Add items to the stock
@@ -155,16 +164,18 @@ def main():
 			add = 'y'
 			while add == 'y':
 				print("\n$$$ New item information $$$\n")
-				item = input('Enter item id: ')
+				item = raw_input('Enter item id: ')
 				img = qrcode.make(item)
 				img.save("img/item"+item+".jpg")
-				name = input('Enter item name: ')
-				price = input('Enter item price: ')
+				name = raw_input('Enter item name: ')
+				price = raw_input('Enter item price: ')
 
 				with open("Items.txt", 'a') as itemfile:
 					itemfile.write(item+ " "+name+ " "+price+'\n')
 
-				add = input('Do you want to add another item to the stock? y for yes ')
+				# cursor.execute("INSERT INTO items (item_id,item_name,price) VALUES (%s,%s,%s)", (item, name, price))
+
+				add = raw_input('Do you want to add another item to the stock? y for yes ')
 
 
 			continue
