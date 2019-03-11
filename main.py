@@ -18,12 +18,12 @@ sender = "example@gmail.com"
 # ser = serial.Serial('/dev/ttyACM1', 9600) 
 
 # Establish a connection to the database
-# host='localhost'
-# user='root'
-# password='xxx'
-# database='email_receipts'
-# mariadb_connection = mariadb.connect(host, user, password, database)
-# cursor = mariadb_connection.cursor()
+host='localhost'
+user='root'
+password='xxx'
+database='email_receipts'
+mariadb_connection = mariadb.connect(host, user, password, database)
+cursor = mariadb_connection.cursor()
 
 # Common dictionaries for any bill
 
@@ -103,10 +103,13 @@ def main():
 				os.remove("Receipts.txt")
 
 	# Get all the current customer emails in the dictionary
-	with open("Customers.txt") as custfile:
-		for line in custfile: 
-			tokens = line.split()
-			emails.update({tokens[0]:tokens[1]})
+	# with open("Customers.txt") as custfile:
+	# 	for line in custfile: 
+	# 		tokens = line.split()
+	# 		emails.update({tokens[0]:tokens[1]})
+	cursor.execute("SELECT * FROM customer")
+	for phone, cust_name, email in cursor:
+		emails.update({phone: (cust_name, email)})
 	
 	choice = 'y'
 	while choice == 'y':
@@ -117,11 +120,16 @@ def main():
 		if todo == '1':
 
 			# Store item details from stock in dictionaries
-			with open("Items.txt") as itemfile:
-				for line in itemfile:
-					tokens = line.split()
-					itemnames.update({tokens[0]:tokens[1]})
-					prices.update({tokens[0]:tokens[2]})
+			cursor.execute("SELECT * FROM items")
+			for item_id, item_name, price in cursor:
+				itemnames.update({item_id:item_name})
+				prices.update({item_id:price})
+
+			# with open("Items.txt") as itemfile:
+			# 	for line in itemfile:
+			# 		tokens = line.split()
+			# 		itemnames.update({tokens[0]:tokens[1]})
+			# 		prices.update({tokens[0]:tokens[2]})
 
 			c = 'y'
 			# This program can generate a 100 bills in a run
@@ -139,8 +147,12 @@ def main():
 					cust = raw_input('Enter phone number: ')
 					c_name = raw_input('Enter name: ')
 					emailid = raw_input('Enter email of the customer: ')
-					with open("Customers.txt", 'a') as custfile:
-						custfile.write(cust+" "+c_name+" "+emailid+'\n')
+					# with open("Customers.txt", 'a') as custfile:
+					# 	custfile.write(cust+" "+c_name+" "+emailid+'\n')
+					cursor.execute("INSERT INTO customer (phone,cust_name,email) VALUES (%s,%s,%s)", (cust, c_name, emailid))
+					mariadb_connection.commit()
+					
+					emails.update({cust: (c_name, emailid)})
 
 				# Generate a bill with a bill id for a particular customer
 				bill = Bill(str(b), cust) 
@@ -170,10 +182,11 @@ def main():
 				name = raw_input('Enter item name: ')
 				price = raw_input('Enter item price: ')
 
-				with open("Items.txt", 'a') as itemfile:
-					itemfile.write(item+ " "+name+ " "+price+'\n')
+				# with open("Items.txt", 'a') as itemfile:
+				# 	itemfile.write(item+ " "+name+ " "+price+'\n')
 
-				# cursor.execute("INSERT INTO items (item_id,item_name,price) VALUES (%s,%s,%s)", (item, name, price))
+				cursor.execute("INSERT INTO items (item_id,item_name,price) VALUES (%s,%s,%s)", (item, name, price))
+				mariadb_connection.commit()
 
 				add = raw_input('Do you want to add another item to the stock? y for yes ')
 
